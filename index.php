@@ -13,8 +13,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // kwetsbaar voor SQL injectie
-    $sql = "SELECT * FROM user WHERE username = '$username' AND password = '$password'";
-    $result = $pdo->query($sql);
+    $sql = "SELECT * FROM user WHERE username = :username AND password = :password";
+    $result = $pdo->prepare($sql);
+    $result->execute(['username' => $username, 'password' => $password]);
     $user = $result->fetch();
 
     // Controleer of er een rij is gevonden
