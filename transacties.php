@@ -7,7 +7,13 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit;
 }
 
+// Controleer of de gebruiker toegang heeft tot deze pagina
 $id = $_GET['id'];
+if ($id != $_SESSION['user']['id']) {
+    header("location: dashboard.php");
+    exit;
+}
+
 
 // Gebruikersgegevens ophalen
 $stmt = $pdo->prepare("SELECT * FROM user WHERE id = ?");
