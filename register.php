@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <span class="block sm:inline"><?= $success ?></span>
             </div>
         <?php endif; ?>
-        <form action="<? echo htmlspecialchars($_SERVER["PHP_SELF"]);  ?>" method="post">
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);  ?>" method="post">
             <div class="mb-4">
                 <label for="username" class="block text-sm font-medium text-gray-700">Gebruikersnaam:</label>
                 <input type="text" id="username" name="username" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
