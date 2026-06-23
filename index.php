@@ -5,32 +5,50 @@ include 'includes/db.php';
 // Tables aanmaken
 include 'includes/userTable.php';
 include 'includes/transactionTable.php';
+ensureAuthColumns($pdo);
+secureDefaultAccounts($pdo);
 
 // Controleer of post is geset
 if($_SERVER["REQUEST_METHOD"] == "POST") {
     // Gebruikersnaam en wachtwoord uit post halen
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    // VEILIG: Prepared statement tegen SQL-injectie
-    $sql = "SELECT * FROM user WHERE username = :username AND password = :password";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        ':username' => $username, 
-        ':password' => $password
-    ]);
-    $user = $stmt->fetch();
+    if (!preg_match('/^[a-zA-Z0-9_]{3,50}$/', $username)) {
+        $user = false;
+        $error = "Gebruikersnaam of wachtwoord is onjuist";
+    } else {
+        $sql = "SELECT * FROM user WHERE username = :username";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':username' => $username]);
+        $user = $stmt->fetch();
+    }
 
-    // Controleer of er een rij is gevonden
-    if($user) {
+    if (isset($error)) {
+        // Foutmelding is al gezet bij ongeldige invoer.
+    } elseif ($user && $user['locked_until'] !== null && strtotime($user['locked_until']) > time()) {
+        $error = "Dit account is tijdelijk geblokkeerd door te veel mislukte inlogpogingen";
+    } elseif($user && password_verify($password, $user['password'])) {
+        $resetAttempts = $pdo->prepare("UPDATE user SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?");
+        $resetAttempts->execute([$user['id']]);
+
         // Gebruiker is ingelogd
         $_SESSION['loggedin'] = true;
         $_SESSION['username'] = $username;
+        $user['failed_login_attempts'] = 0;
+        $user['locked_until'] = null;
         $_SESSION['user'] = $user;
 
         header("location: dashboard.php");
         exit; // Zorg dat het script direct stopt na een redirect
     } else {
+        if ($user) {
+            $attempts = (int)$user['failed_login_attempts'] + 1;
+            $lockedUntil = $attempts >= 5 ? date('Y-m-d H:i:s', time() + 15 * 60) : null;
+            $updateAttempts = $pdo->prepare("UPDATE user SET failed_login_attempts = ?, locked_until = ? WHERE id = ?");
+            $updateAttempts->execute([$attempts, $lockedUntil, $user['id']]);
+        }
+
         // Gebruiker is niet ingelogd
         $error = "Gebruikersnaam of wachtwoord is onjuist";
     }

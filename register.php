@@ -7,18 +7,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $passwordcheck = $_POST['passwordcheck'];
 
-    if ($password == $passwordcheck) {
+    if ($password !== $passwordcheck) {
+        $error = "De wachtwoorden komen niet overeen";
+    } elseif ($passwordError = validatePasswordStrength($password)) {
+        $error = $passwordError;
+    } else {
         $stmt = $pdo->prepare("SELECT * FROM user WHERE username = ?");
         $stmt->execute([$username]);
         if ($stmt->rowCount() == 0) {
             $stmt = $pdo->prepare("INSERT INTO user (username, password, balance, isAdmin) VALUES (?, ?, 100, 0)");
-            $stmt->execute([$username, $password]);
+            $stmt->execute([$username, password_hash($password, PASSWORD_DEFAULT)]);
             $success = "Je account is aangemaakt, je kunt nu inloggen";
         } else {
             $error = "Deze gebruikersnaam is al in gebruik";
         }
-    } else {
-        $error = "De wachtwoorden komen niet overeen";
     }
 }
 
@@ -60,11 +62,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="mb-6">
                 <label for="password" class="block text-sm font-medium text-gray-700">Wachtwoord:</label>
-                <input type="password" id="password" name="password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <input type="password" id="password" name="password" minlength="12" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
             </div>
             <div class="mb-6">
                 <label for="passwordcheck" class="block text-sm font-medium text-gray-700">Herhaal wachtwoord:</label>
-                <input type="password" id="passwordcheck" name="passwordcheck" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <input type="password" id="passwordcheck" name="passwordcheck" minlength="12" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
             </div>
                 <div class="flex justify-center">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Registreren</button>

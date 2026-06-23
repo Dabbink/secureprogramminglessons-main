@@ -91,7 +91,7 @@ $saldo = $stmt->fetchColumn();
                         €<?php echo number_format($saldo, 2, ',', '.'); ?>
                     </p>
                     <div class="text-center">
-                        <a href="transacties.php?id=<?= htmlspecialchars($_SESSION['user']['id']) ?>" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        <a href="transacties.php" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                             Transactieoverzicht
                         </a>
                     </div>
@@ -119,10 +119,10 @@ $saldo = $stmt->fetchColumn();
                         <input type="submit" value="Overmaken" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
                         <?php
                             if(isset($error)) {
-                                echo '<p class="text-red-500 text-sm mt-2">' . $error . '</p>';
+                                echo '<p class="text-red-500 text-sm mt-2">' . htmlspecialchars($error) . '</p>';
                             }
                             if(isset($success)) {
-                                echo '<p class="text-green-500 text-sm mt-2">' . $success . '</p>';
+                                echo '<p class="text-green-500 text-sm mt-2">' . htmlspecialchars($success) . '</p>';
                             }
                         ?>
                     </form>
