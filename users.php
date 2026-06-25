@@ -2,8 +2,15 @@
 session_start();
 include 'includes/db.php';
 
+// Check 1: Is de gebruiker ingelogd? (Dit weert ongeautoriseerde gebruikers)
 if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
     header("location: index.php");
+    exit;
+}
+
+// NIEUW - Check 2: Is de gebruiker een beheerder? (Dit weert normale geautoriseerde gebruikers)
+if(!isset($_SESSION['user']['isAdmin']) || $_SESSION['user']['isAdmin'] != 1){
+    header("location: dashboard.php");
     exit;
 }
 

@@ -7,15 +7,10 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit;
 }
 
-// Controleer of de gebruiker toegang heeft tot deze pagina
-$id = $_GET['id'];
-if ($id != $_SESSION['user']['id']) {
-    header("location: dashboard.php");
-    exit;
-}
+// NIEUW: Geen $_GET['id'] meer gebruiken uit de URL, maar direct de veilige sessie-ID pakken
+$id = $_SESSION['user']['id'];
 
-
-// Gebruikersgegevens ophalen
+// Gebruikersgegevens ophalen op basis van de ingelogde sessie
 $stmt = $pdo->prepare("SELECT * FROM user WHERE id = ?");
 $stmt->execute([$id]);
 $user = $stmt->fetch();
@@ -65,7 +60,7 @@ $incomingTransactions = $stmt->fetchAll();
             <div class="bg-red-100 p-2 rounded">
                 <?php foreach ($outgoingTransactions as $transaction): ?>
                     <div class="flex justify-between mb-2">
-                        <p><?= htmlspecialchars($transaction['description']) ?></p>
+                        <p><?= htmlspecialchars($transaction['description'], ENT_QUOTES, 'UTF-8') ?></p>
                         <p>€<?= number_format($transaction['amount'], 2, ',', '.') ?></p>
                     </div>
                 <?php endforeach; ?>
@@ -81,7 +76,7 @@ $incomingTransactions = $stmt->fetchAll();
                 <div class="bg-green-100 p-2 rounded">
                     <?php foreach ($incomingTransactions as $transaction): ?>
                         <div class="flex justify-between mb-2">
-                            <p><?= htmlspecialchars($transaction['description']) ?></p>
+                            <p><?= htmlspecialchars($transaction['description'], ENT_QUOTES, 'UTF-8') ?></p>
                             <p>€<?= number_format($transaction['amount'], 2, ',', '.') ?></p>
                         </div>
                     <?php endforeach; ?>

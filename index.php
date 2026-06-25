@@ -14,15 +14,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    if (!preg_match('/^[a-zA-Z0-9_]{3,50}$/', $username)) {
-        $user = false;
-        $error = "Gebruikersnaam of wachtwoord is onjuist";
-    } else {
-        $sql = "SELECT * FROM user WHERE username = :username";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([':username' => $username]);
-        $user = $stmt->fetch();
-    }
+// Directe opschoning en strikte afhandeling via Prepared Statements
+    $sql = "SELECT * FROM user WHERE username = :username";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':username' => $username]);
+    $user = $stmt->fetch();
 
     if (isset($error)) {
         // Foutmelding is al gezet bij ongeldige invoer.
