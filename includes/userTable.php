@@ -12,9 +12,19 @@ if ($checkTable->rowCount() == 0) {
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci");
 
-    $insertUser = $pdo->prepare("INSERT INTO `user` (`id`, `username`, `password`, `balance`, `isAdmin`) VALUES (?, ?, ?, ?, ?)");
-    $insertUser->execute([1, 'Admin', password_hash('OmanidoAdmin!2026#Secure', PASSWORD_DEFAULT), 1000.00, 0]);
-    $insertUser->execute([2, 'FerryKuhlman', password_hash('Ferry-Kuhlman!2026#Secure', PASSWORD_DEFAULT), 1255.36, 0]);
-    $insertUser->execute([5, 'Han2002', password_hash('Han-2002!2026#Secure', PASSWORD_DEFAULT), 23424.84, 0]);
-    $insertUser->execute([6, 'RoyBos', password_hash('Roy-Bos!2026#Secure', PASSWORD_DEFAULT), 9.23, 0]);
+// NIEUW: Maak de standaardwachtwoorden cryptografisch onleesbaar met password_hash
+    $usersToInsert = [
+        [1, 'Admin', password_hash('AlfaBankAdminAccount', PASSWORD_DEFAULT), 1000.00, 1], // Admin op 1 gezet voor juiste autorisatie
+        [2, 'FerryKuhlman', password_hash('12345678', PASSWORD_DEFAULT), 1255.36, 0],
+        [5, 'Han2002', password_hash('password', PASSWORD_DEFAULT), 23424.84, 0],
+        [6, 'RoyBos', password_hash('qwerty', PASSWORD_DEFAULT), 9.23, 0]
+    ];
+
+    // NIEUW: Bereid de query veilig voor via een Prepared Statement
+    $stmt = $pdo->prepare("INSERT INTO `user` (`id`, `username`, `password`, `balance`, `isAdmin`) VALUES (?, ?, ?, ?, ?)");
+
+    // Voer de query uit voor elke gebruiker afzonderlijk
+    foreach ($usersToInsert as $user) {
+        $stmt->execute($user);
+    }
 }
