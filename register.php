@@ -7,8 +7,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $passwordcheck = $_POST['passwordcheck'];
 
+    // NIEUW: Lijst met veelgebruikte/gelekte wachtwoorden uit de opdrachten
+    $blacklisted_passwords = ['geheim', 'qwerty', '12345678', 'abcdefg', 'wachtwoord', '123456789'];
+    
     if ($password !== $passwordcheck) {
         $error = "De wachtwoorden komen niet overeen";
+    } elseif (in_array(strtolower($password), $blacklisted_passwords)) {
+        // NIEUW: Blokkeer bekende zwakke wachtwoorden
+        $error = "Dit wachtwoord is te zwak of komt voor in een bekend datalek. Kies een ander wachtwoord.";
     } elseif ($passwordError = validatePasswordStrength($password)) {
         $error = $passwordError;
     } else {

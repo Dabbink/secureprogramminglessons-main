@@ -10,7 +10,9 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
 // als button is ingedrukt
 if($_SERVER["REQUEST_METHOD"] == "POST"){
     $ontvanger = $_POST['ontvanger'];
-    $bedrag = $_POST['bedrag'];
+
+    // NIEUW: Valideer of de invoer een geldig getal (float) is
+    $bedrag = filter_var($_POST['bedrag'], FILTER_VALIDATE_FLOAT);
 
     // Controleer of de ontvanger bestaat
     $stmt = $pdo->prepare("SELECT * FROM user WHERE username = ?");
@@ -18,9 +20,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $ontvanger = $stmt->fetch();
 
     if($stmt->rowCount() == 1) {
-        // Controleer of de gebruiker genoeg saldo heeft
-        if($_SESSION['user']['balance'] >= $bedrag) {
-            // Zet de transactie in de database
+        // NIEUW: Strikte controle op negatieve getallen of ongeldige tekst
+        if ($bedrag === false || $bedrag <= 0) {
+            $error = "Ongeldig bedrag ingevoerd. Het bedrag moet positief zijn.";
+        }
+    // Pas daarna controleren op voldoende saldo via een elseif
+    elseif($_SESSION['user']['balance'] >= $bedrag) {
+        // Zet de transactie in de database
             $stmt = $pdo->prepare("INSERT INTO transaction (sender, receiver, amount, description) VALUES (?, ?, ?, ?)");
             $stmt->execute([$_SESSION['user']['id'], $ontvanger['id'], $bedrag, $_POST['omschrijving']]);
 
